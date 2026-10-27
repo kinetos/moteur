@@ -1,5 +1,5 @@
 // Service worker minimal : réseau d'abord (les mises à jour arrivent tout de suite), cache en secours.
-const CACHE = 'moteur-v2';
+const CACHE = 'moteur-v3';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', 'index.html', 'icon.svg'])).catch(() => {}));
   self.skipWaiting();
@@ -13,8 +13,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
     fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {}); }
       return res;
     }).catch(() => caches.match(req))
   );
