@@ -446,6 +446,7 @@ function rescan() {
 
 // ---- Qui parle ----
 function meter() {
+  if (pocketOn) return;   // écran noir : on ne calcule rien
   let changed = false;
   channels.forEach(ch => Object.values(ch.remotes).forEach(r => {
     if (!r.analyser) return;
@@ -465,6 +466,7 @@ function chip(text, cls) {
   d.className = 'chip ' + cls; d.textContent = text; return d;
 }
 function renderChans() {
+  if (pocketOn) return;
   const box = $('chans'), keep = box.scrollTop;
   box.innerHTML = '';
   channels.forEach(ch => {
@@ -563,11 +565,11 @@ async function reviveMic() {
 $('micFix').onclick = reviveMic;
 
 // ---- Mode poche : écran noir, tout reste actif ----
-let pocketT = null;
-function openPocket() { $('pocket').classList.remove('hide'); updateOutputs(); }
+let pocketT = null, pocketOn = false;
+function openPocket() { pocketOn = true; $('pocket').classList.remove('hide'); updateOutputs(); }
 $('pocketBtn').onclick = openPocket;
 const po = $('pocketOut');
-po.addEventListener('pointerdown', e => { e.preventDefault(); pocketT = setTimeout(() => $('pocket').classList.add('hide'), 1000); });
+po.addEventListener('pointerdown', e => { e.preventDefault(); pocketT = setTimeout(() => { pocketOn = false; $('pocket').classList.add('hide'); renderChans(); }, 1000); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => po.addEventListener(ev, () => clearTimeout(pocketT)));
 
 // ---- Invitation ----
@@ -606,7 +608,7 @@ $('leave').onclick = () => {
   try { if (keepAlive) { keepAlive.pause(); keepAlive.src = ''; } } catch (e) {}
   try { navigator.mediaSession.playbackState = 'none'; } catch (e) {}
   base = null; talking = false; broadcast = false;
-  $('modal').classList.add('hide'); $('pocket').classList.add('hide'); $('mic').classList.add('hide');
+  pocketOn = false; $('modal').classList.add('hide'); $('pocket').classList.add('hide'); $('mic').classList.add('hide');
   $('call').classList.add('hide'); $('join').classList.remove('hide');
 };
 
