@@ -267,7 +267,12 @@ async function loadRelay() {
     const r = await fetch('relay.json', { cache: 'no-store' });
     if (r.ok) {
       const j = await r.json();
-      if (Array.isArray(j.iceServers) && j.iceServers.length) { ICE.iceServers.push(...j.iceServers); relayOn = true; }
+      let list = Array.isArray(j.iceServers) ? j.iceServers : [];
+      if (j.username && j.credential) {
+        ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp', 'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp']
+          .forEach(u => list.push({ urls: u, username: j.username, credential: j.credential }));
+      }
+      if (list.length) { ICE.iceServers.push(...list); relayOn = true; }
     }
   } catch (e) {}
   if (params.get('relay') === 'only') ICE.iceTransportPolicy = 'relay';   // test : force le passage par le relais
