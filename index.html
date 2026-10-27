@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Moteur</title>
+<style>
+  :root { --bg:#0b0b0c; --card:#18181b; --line:#2a2a30; --txt:#f4f4f5; --dim:#8b8b94; --acc:#ff5a36; --ok:#2fd27a; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--txt); font:16px/1.4 -apple-system,system-ui,sans-serif; }
+  body { padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); max-width:520px; margin:0 auto; display:flex; flex-direction:column; }
+  h1 { font-size:18px; letter-spacing:.08em; text-transform:uppercase; margin:18px 0 14px; }
+  h1 span { color:var(--acc); }
+  label { display:block; font-size:12px; color:var(--dim); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.06em; }
+  input,select { width:100%; padding:14px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--txt); font-size:17px; }
+  button { font:inherit; color:var(--txt); border:0; border-radius:14px; padding:14px; background:var(--card); border:1px solid var(--line); }
+  button.primary { background:var(--acc); border-color:var(--acc); font-weight:700; width:100%; margin-top:22px; font-size:18px; }
+  .hide { display:none !important; }
+  #call { flex:1; display:flex; flex-direction:column; }
+  .bar { display:flex; justify-content:space-between; align-items:center; margin:14px 0 8px; gap:8px; }
+  .bar b { font-size:20px; }
+  .bar small { color:var(--dim); display:block; }
+  #peers { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; margin:8px 0 14px; }
+  .peer { padding:12px 8px; text-align:center; border-radius:12px; background:var(--card); border:2px solid var(--line); font-size:14px; transition:border-color .08s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .peer.speaking { border-color:var(--ok); box-shadow:0 0 14px #2fd27a55; }
+  .peer.me { color:var(--dim); }
+  .peer.me.speaking { border-color:var(--acc); box-shadow:0 0 14px #ff5a3655; color:var(--txt); }
+  .modes { display:flex; gap:6px; margin-bottom:10px; }
+  .modes button { flex:1; padding:10px 4px; font-size:13px; }
+  .modes button.on { background:#2a2a30; border-color:var(--acc); }
+  #ptt { margin-top:auto; margin-bottom:18px; height:34vh; min-height:170px; width:100%; border-radius:28px; font-size:22px; font-weight:800; letter-spacing:.06em; background:var(--card); border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #ptt.live { background:var(--acc); border-color:#ffb199; }
+  #status { color:var(--dim); font-size:13px; min-height:18px; }
+  .row { display:flex; gap:8px; }
+  .row button { flex:1; }
+</style>
+</head>
+<body>
+<h1>Moteur<span>!</span></h1>
+
+<section id="join">
+  <label>Ton nom</label>
+  <input id="name" placeholder="ex : Guillaume (image)" autocomplete="off" maxlength="20">
+  <label>Code du tournage</label>
+  <input id="room" placeholder="ex : clip-mardi" autocomplete="off" autocapitalize="none" maxlength="30">
+  <label>Canal</label>
+  <select id="chan"></select>
+  <button class="primary" id="go">Rejoindre</button>
+  <p id="status1" style="color:var(--dim);font-size:13px;margin-top:14px">
+    Mets tes AirPods / casque Bluetooth avant de rejoindre. Tous les téléphones doivent utiliser le même code et le même canal.
+  </p>
+</section>
+
+<section id="call" class="hide">
+  <div class="bar">
+    <div><b id="chanTitle"></b><small id="roomTitle"></small></div>
+    <div class="row" style="flex:none">
+      <button id="share">Lien</button>
+      <button id="leave">Quitter</button>
+    </div>
+  </div>
+  <div id="peers"></div>
+  <div class="modes">
+    <button data-mode="hold" class="on">Maintenir</button>
+    <button data-mode="latch">Verrouiller</button>
+    <button data-mode="open">Micro ouvert</button>
+  </div>
+  <div id="status"></div>
+  <button id="ptt">PARLER</button>
+</section>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+// ---- Réglages ----
+const CHANNELS = ['Général','Image','Son','Régie','Réal'];
+const MAX_SLOTS = 12;               // personnes max par canal (maillage : au-delà, ça se dégrade)
+const ICE = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:global.stun.twilio.com:3478' }
+  // Pour plus de fiabilité en 4G/5G, ajouter ici un serveur TURN (ex. gratuit chez metered.ca) :
+  // { urls:'turn:...', username:'...', credential:'...' }
+]};
+
+// ---- Etat ----
+const $ = id => document.getElementById(id);
+let peer = null, stream = null, mySlot = 0, myName = '', room = '', chan = '';
+let mode = 'hold', talking = false, wakeLock = null, actx = null, joined = false;
+const remotes = {};   // peerId -> { audio, analyser, name, speaking }
+
+CHANNELS.forEach(c => { const o = document.createElement('option'); o.textContent = c; $('chan').appendChild(o); });
+const slug = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const params = new URLSearchParams(location.search);
+$('room').value = params.get('room') || localStorage.getItem('ic_room') || '';
+$('name').value = localStorage.getItem('ic_name') || '';
+if (params.get('c') && CHANNELS.includes(params.get('c'))) $('chan').value = params.get('c');
+
+// ---- Rejoindre ----
+$('go').onclick = async () => {
+  myName = $('name').value.trim() || 'Anonyme';
+  room = slug($('room').value);
+  chan = slug($('chan').value);
+  if (!room) { $('status1').textContent = 'Entre un code de tournage.'; return; }
+  localStorage.setItem('ic_name', myName); localStorage.setItem('ic_room', room);
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
+  } catch (e) {
+    $('status1').textContent = 'Micro refusé. Autorise-le dans les réglages du navigateur (et utilise https).'; return;
+  }
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  actx.resume();
+  setTalking(mode === 'open');
+  $('join').classList.add('hide'); $('call').classList.remove('hide');
+  $('chanTitle').textContent = $('chan').value; $('roomTitle').textContent = room;
+  joined = true;
+  try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  setupMediaSession();
+  claimSlot(1);
+  render();
+  requestAnimationFrame(meter);
+};
+
+const idFor = n => `moteur-${room}-${chan}-${n}`;
+
+function claimSlot(n) {
+  if (!joined) return;
+  if (n > MAX_SLOTS) { setStatus('Canal complet.'); return; }
+  setStatus('Connexion…');
+  const p = new Peer(idFor(n), { config: ICE });
+  p.on('open', () => {
+    peer = p; mySlot = n;
+    p.on('call', onCall);
+    p.on('connection', onData);
+    for (let i = 1; i <= MAX_SLOTS; i++) if (i !== n) dial(i);
+    setStatus('Connecté');
+  });
+  p.on('error', e => {
+    if (e.type === 'unavailable-id') { p.destroy(); claimSlot(n + 1); }
+    else if (e.type === 'peer-unavailable') { /* personne sur ce slot : normal */ }
+    else if (e.type === 'network' || e.type === 'disconnected' || e.type === 'server-error' || e.type === 'socket-error') setStatus('Réseau instable… reconnexion');
+    else console.warn(e);
+  });
+  p.on('disconnected', () => { if (joined) { setStatus('Réseau perdu, reconnexion…'); try { p.reconnect(); } catch(e){} } });
+}
+
+function dial(i) {
+  const id = idFor(i);
+  const c = peer.call(id, stream);
+  c.on('stream', s => attach(id, s));
+  c.on('close', () => detach(id));
+  c.on('error', () => detach(id));
+  const d = peer.connect(id);
+  d.on('open', () => d.send({ name: myName }));
+  d.on('data', m => { if (m && m.name) setName(id, m.name); });
+}
+
+function onCall(call) {
+  call.answer(stream);
+  call.on('stream', s => attach(call.peer, s));
+  call.on('close', () => detach(call.peer));
+  call.on('error', () => detach(call.peer));
+}
+function onData(conn) {
+  conn.on('open', () => conn.send({ name: myName }));
+  conn.on('data', m => { if (m && m.name) setName(conn.peer, m.name); });
+}
+
+// ---- Audio distant ----
+function attach(id, s) {
+  let r = remotes[id];
+  if (!r) { r = remotes[id] = { name: '…', speaking: false }; }
+  if (!r.audio) { r.audio = document.createElement('audio'); r.audio.autoplay = true; r.audio.playsInline = true; document.body.appendChild(r.audio); }
+  r.audio.srcObject = s;
+  r.audio.play().catch(()=>{});
+  try {
+    const src = actx.createMediaStreamSource(s);
+    r.analyser = actx.createAnalyser(); r.analyser.fftSize = 512; src.connect(r.analyser);
+    r.buf = new Uint8Array(r.analyser.fftSize);
+  } catch(e) {}
+  render();
+}
+function detach(id) {
+  const r = remotes[id]; if (!r) return;
+  if (r.audio) { r.audio.srcObject = null; r.audio.remove(); }
+  delete remotes[id]; render();
+}
+function setName(id, name) {
+  (remotes[id] = remotes[id] || { speaking:false }).name = name; render();
+}
+
+// ---- Indicateurs "qui parle" ----
+let lastRender = 0;
+function meter(t) {
+  if (!joined) return;
+  let changed = false;
+  for (const id in remotes) {
+    const r = remotes[id]; if (!r.analyser) continue;
+    r.analyser.getByteTimeDomainData(r.buf);
+    let sum = 0; for (let i = 0; i < r.buf.length; i++) { const v = (r.buf[i] - 128) / 128; sum += v*v; }
+    const sp = Math.sqrt(sum / r.buf.length) > 0.02;
+    if (sp !== r.speaking) { r.speaking = sp; changed = true; }
+  }
+  if (changed) render();
+  requestAnimationFrame(meter);
+}
+function render() {
+  const el = $('peers'); el.innerHTML = '';
+  const me = document.createElement('div');
+  me.className = 'peer me' + (talking ? ' speaking' : ''); me.textContent = myName + ' (moi)'; el.appendChild(me);
+  Object.values(remotes).forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'peer' + (r.speaking ? ' speaking' : ''); d.textContent = r.name || '…'; el.appendChild(d);
+  });
+}
+function setStatus(s) { $('status').textContent = s; }
+
+// ---- Micro / push-to-talk ----
+function setTalking(on) {
+  talking = on;
+  if (stream) stream.getAudioTracks().forEach(t => t.enabled = on);
+  $('ptt').classList.toggle('live', on);
+  $('ptt').textContent = mode === 'open' ? 'MICRO OUVERT' : (on ? 'EN ANTENNE' : 'PARLER');
+  if (joined) render();
+}
+const ptt = $('ptt');
+ptt.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (mode === 'hold') setTalking(true);
+  else if (mode === 'latch') setTalking(!talking);
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev => ptt.addEventListener(ev, () => { if (mode === 'hold') setTalking(false); }));
+ptt.addEventListener('contextmenu', e => e.preventDefault());
+
+document.querySelectorAll('.modes button').forEach(b => b.onclick = () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.modes button').forEach(x => x.classList.toggle('on', x === b));
+  setTalking(mode === 'open');
+});
+
+// Bouton play/pause des AirPods = bascule du micro (mode "Verrouiller" conseillé)
+function setupMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: 'Intercom', artist: chan });
+    const toggle = () => { if (mode !== 'open') setTalking(!talking); };
+    ['play','pause'].forEach(a => navigator.mediaSession.setActionHandler(a, toggle));
+  } catch(e) {}
+}
+
+// ---- Quitter / partager ----
+$('leave').onclick = () => {
+  joined = false;
+  Object.keys(remotes).forEach(detach);
+  try { peer && peer.destroy(); } catch(e){}
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  try { wakeLock && wakeLock.release(); } catch(e){}
+  try { actx && actx.close(); } catch(e){}
+  peer = null; stream = null; talking = false;
+  $('call').classList.add('hide'); $('join').classList.remove('hide');
+};
+$('share').onclick = async () => {
+  const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(room)}&c=${encodeURIComponent($('chan').value)}`;
+  try { if (navigator.share) await navigator.share({ title:'Intercom', url }); else { await navigator.clipboard.writeText(url); setStatus('Lien copié'); } } catch(e){}
+};
+document.addEventListener('visibilitychange', async () => {
+  if (joined && document.visibilityState === 'visible') {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    if (actx && actx.state === 'suspended') actx.resume();
+  }
+});
+</script>
+</body>
+</html>
