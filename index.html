@@ -11,30 +11,44 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAADLklEQVR42u3dMVIbQRCG0ZkpQp/EB+Aazjmgcq6hA/gkzkXmgCoQQmi3+9/3UhOopr5qt8SOmKOAy8vzZdDePJ3n7q9BwCQFPkVMUtxTxCTFPYVMUthLzCR9GDCFTNK0XmImaVpPIZM0rZeYSZrWS8wkRb3ETFLUS8wkRb3ETFLUS8wkRb3ETFLUyzGRZJnOJE3pJWaSorZykL9ymM50ndJLzCRFbeUgd+Uwnek+pU1ojvM5NLQN2rpBwtphQmPlgNJBWzdIWTtMaKwcIGjYwLQ/k+TJETzOr9e/H/7bvz+/HZCg+4f8/meEbYduH/M9P4+gy8YsakGDoCtPZ1Na0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQMN1ZGylNzFW6WVH5tJnSzR0D3fryz8mszoZs+y7zHPcDKr82EBkHXu2my1X/xlV+boMOuTT06nMqvTdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQDA/4D9ejhicQ257xcj2KpDN+cj2KpDO2Q+NNoetRrqAJ2hUkZ2zlAEEjaBA0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0NAh6Hu+4dI3kB73jFfagYv52Gds5WD4kxQ7TJBr33ZpMjvjVhP6s8MUszNu+UeDhOuM7dAMH9uBoEHQIGgQNIIGQYOgQdAgaAQNggZBD1eQXEETdOwVJFfQBM1wBWuY0nWvILmCZkJHXkFyBc2EjntDJVwTGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBj0M/pedJOkGDoCtOadNZ0DFRi3m4sZJwR1HIjzHHGOPy8nxxFLSP+XSeVg7s0CBo2CroeTpPR0H3/dmExsoBLYK2dtB93TChsXJAm6CtHXReN0xo8lcOU5qu0/nDCS1qOsZs5eA4n3KY0nSbzlcntKjpFLOVg+P9YsWUpst0/vKEFjUdYr5p5RA11WO+eYcWNZVj/tabQlFTNeZvf8ohairGfNfHdqKmWsz/v2jmXr6ohr1D/tFfrJjWVGnox0M0rdlzGK7qLxAx7zqhTWv2HHqbTVNxi3izr9PdmrhFHBW0wAX8KG/YnFfB4BooNQAAAABJRU5ErkJggg==">
-<title>Moteur</title>
+<title>Moteur!</title>
 <style>
   :root { --bg:#0b0b0c; --card:#18181b; --line:#2a2a30; --txt:#f4f4f5; --dim:#8b8b94; --acc:#ff5a36; --ok:#2fd27a; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { margin:0; height:100%; background:var(--bg); color:var(--txt); font:16px/1.4 -apple-system,system-ui,sans-serif; }
-  body { padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); max-width:560px; margin:0 auto; display:flex; flex-direction:column; }
+  body { height:100dvh; overflow:hidden; padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); max-width:560px; margin:0 auto; display:flex; flex-direction:column; }
   h1 { font-size:18px; letter-spacing:.08em; text-transform:uppercase; margin:16px 0 10px; }
   h1 span { color:var(--acc); }
   label { display:block; font-size:12px; color:var(--dim); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.06em; }
   input { width:100%; padding:14px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--txt); font-size:17px; }
   button { font:inherit; color:var(--txt); border-radius:14px; padding:12px; background:var(--card); border:1px solid var(--line); }
-  button.primary { background:var(--acc); border-color:var(--acc); font-weight:700; width:100%; margin-top:22px; font-size:18px; padding:14px; }
+  button.primary { background:var(--acc); border-color:var(--acc); font-weight:700; width:100%; margin-top:18px; font-size:18px; padding:14px; }
+  button.ghost { width:100%; margin-top:8px; font-size:14px; padding:10px; color:var(--dim); }
   .hide { display:none !important; }
   .err { color:#ff8a70; font-size:14px; min-height:20px; margin:10px 0 0; }
   .hint { color:var(--dim); font-size:13px; margin:10px 0; }
-  details { color:var(--dim); font-size:13px; margin-top:8px; }
+  details { color:var(--dim); font-size:13px; margin-top:10px; }
   summary { cursor:pointer; padding:6px 0; }
+  #join { flex:1; min-height:0; overflow-y:auto; padding-bottom:24px; }
+  .invited { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-top:16px; }
+  .invited b { color:var(--acc); }
+  .invited small { display:block; color:var(--dim); margin-top:4px; }
+  #chEditor { max-height:34vh; overflow-y:auto; overscroll-behavior:contain; border:1px solid var(--line); border-radius:12px; padding:8px; background:#101013; }
+  .edrow { display:flex; gap:8px; margin-bottom:8px; }
+  .edrow:last-child { margin-bottom:0; }
+  .edrow input { padding:10px 12px; font-size:16px; }
+  .edrow button { width:44px; flex:none; padding:0; font-size:20px; color:var(--dim); }
   #call { flex:1; min-height:0; display:flex; flex-direction:column; }
   .bar { display:flex; justify-content:space-between; align-items:center; margin:8px 0; gap:8px; }
   .bar b { font-size:19px; }
   .bar small { color:var(--dim); display:block; }
   .row { display:flex; gap:8px; }
-  .row button { padding:10px 14px; }
-  #chans { flex:1; min-height:0; overflow-y:auto; margin-bottom:8px; }
+  .row button { padding:10px 12px; }
+  #mic { background:#3a1a12; border:1px solid var(--acc); border-radius:12px; padding:10px 12px; margin-bottom:8px; font-size:14px; display:flex; gap:10px; align-items:center; }
+  #mic span { flex:1; }
+  #mic button { padding:8px 12px; background:var(--acc); border-color:var(--acc); font-weight:700; }
+  #chans { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; margin-bottom:8px; padding-right:2px; }
+  #chans::-webkit-scrollbar { width:4px; } #chans::-webkit-scrollbar-thumb { background:#3a3a42; border-radius:4px; }
   .card { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:8px 12px 10px; margin-bottom:8px; }
   .card.talk { border-color:var(--acc); }
   .ch-head { display:flex; align-items:center; gap:8px; }
@@ -53,13 +67,19 @@
   .modes button.on { background:#2a2a30; border-color:var(--acc); }
   #status { color:var(--dim); font-size:12px; min-height:16px; margin-bottom:6px; }
   .ptts { display:flex; gap:10px; margin-bottom:16px; }
-  #ptt { flex:1; height:26vh; min-height:130px; border-radius:26px; font-size:19px; font-weight:800; letter-spacing:.05em; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
-  #all { width:30%; height:26vh; min-height:130px; border-radius:26px; font-size:17px; font-weight:800; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #ptt { flex:1; height:24vh; min-height:120px; border-radius:26px; font-size:19px; font-weight:800; letter-spacing:.05em; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #all { width:30%; height:24vh; min-height:120px; border-radius:26px; font-size:17px; font-weight:800; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
   #ptt.live, #all.live { background:var(--acc); border-color:#ffb199; }
   #modal { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; padding:16px; z-index:20; }
-  .sheet { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; align-items:stretch; }
+  .sheet { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; align-items:stretch; max-height:100%; overflow-y:auto; }
   #qr { align-self:center; background:#fff; padding:10px; border-radius:12px; min-height:60px; }
   #link { font-size:13px; padding:10px; }
+  .code { text-align:center; font-size:22px; font-weight:800; letter-spacing:.04em; color:var(--acc); }
+  #pocket { position:fixed; inset:0; background:#000; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; color:#3a3a42; text-align:center; padding:24px; touch-action:none; user-select:none; -webkit-user-select:none; }
+  #pocket .big { font-size:15px; }
+  #pocket .live { color:var(--acc); font-weight:800; font-size:20px; }
+  #pocket button { background:#000; border:1px solid #2a2a30; color:#55555e; padding:16px 22px; border-radius:16px; }
+  #pocket button.hold { border-color:var(--acc); }
 </style>
 </head>
 <body>
@@ -68,13 +88,34 @@
 <section id="join">
   <label for="name">Ton nom</label>
   <input id="name" placeholder="ex : Guillaume (image)" autocomplete="off" maxlength="20">
-  <label for="room">Code du tournage</label>
-  <input id="room" placeholder="ex : clip-mardi" autocomplete="off" autocapitalize="none" maxlength="30">
-  <label for="chs">Canaux (séparés par des virgules)</label>
-  <input id="chs" autocomplete="off" maxlength="120">
-  <button class="primary" id="go">Rejoindre</button>
+
+  <!-- Arrivée par lien ou QR code -->
+  <div id="invited" class="invited hide">
+    Tu rejoins le tournage <b id="invRoom"></b>
+    <small id="invChs"></small>
+  </div>
+  <button class="primary hide" id="joinBtn">Rejoindre</button>
+
+  <!-- Création d'un nouveau tournage -->
+  <div id="createBox">
+    <label>Canaux de ce tournage</label>
+    <div id="chEditor"></div>
+    <button class="ghost" id="addCh">+ Ajouter un canal</button>
+    <button class="primary" id="create">Créer le tournage</button>
+    <p class="hint">Tu reçois ensuite un QR code : l'équipe le scanne avec l'appareil photo, entre son nom, et c'est parti. Branche tes AirPods ou ton casque avant.</p>
+    <button class="ghost hide" id="resume"></button>
+  </div>
+
+  <details id="codeBox">
+    <summary>J'ai un code de tournage</summary>
+    <p>Le code, c'est le "numéro de salle" : deux téléphones qui ont le même code se retrouvent dans le même intercom. Il est généré tout seul quand quelqu'un crée le tournage et s'affiche avec le QR code.</p>
+    <input id="room" placeholder="ex : clap-boom-47" autocomplete="off" autocapitalize="none" maxlength="40">
+    <label for="chs">Canaux (identiques à ceux du créateur, séparés par des virgules)</label>
+    <input id="chs" autocomplete="off" maxlength="200">
+    <button class="primary" id="goCode" style="margin-top:12px">Rejoindre avec ce code</button>
+  </details>
+
   <p class="err" id="err"></p>
-  <p class="hint">Branche tes AirPods ou ton casque Bluetooth avant de rejoindre. Tout le monde doit utiliser le même code et la même liste de canaux : le plus simple est de scanner le QR code de l'invitation.</p>
   <details>
     <summary>Installer comme une app</summary>
     <p>iPhone : bouton Partager, puis "Sur l'écran d'accueil". Android : menu ⋮, puis "Installer l'application" ou "Ajouter à l'écran d'accueil".</p>
@@ -86,9 +127,11 @@
     <div><b id="roomTitle"></b><small id="who"></small></div>
     <div class="row">
       <button id="invite">Inviter</button>
+      <button id="pocketBtn">Poche</button>
       <button id="leave">Quitter</button>
     </div>
   </div>
+  <div id="mic" class="hide"><span>Le micro a été coupé (écran verrouillé ou autre app).</span><button id="micFix">Réactiver</button></div>
   <div id="chans"></div>
   <div class="modes">
     <button data-mode="hold" class="on">Maintenir</button>
@@ -106,6 +149,7 @@
   <div class="sheet">
     <b>Inviter l'équipe</b>
     <div id="qr"></div>
+    <div class="code" id="codeShow"></div>
     <input id="link" readonly>
     <div class="row">
       <button id="copy" style="flex:1">Copier le lien</button>
@@ -114,23 +158,31 @@
   </div>
 </div>
 
+<div id="pocket" class="hide">
+  <div class="big" id="pocketInfo"></div>
+  <div class="live hide" id="pocketLive">EN ANTENNE</div>
+  <button id="pocketPtt">PARLER (maintenir)</button>
+  <button id="pocketOut" class="hold">Maintenir 1 s pour sortir</button>
+</div>
+
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // ---- Réglages ----
 const DEFAULT_CHANNELS = 'Général, Image, Son, Régie, Réal';
 const MAX_SLOTS = 12;      // personnes max par canal (maillage : au-delà, la qualité se dégrade)
-const MAX_CHANNELS = 8;
+const MAX_CHANNELS = 12;
+const WORDS = ['clap','boom','action','coupe','rush','focale','cadre','grue','plan','scene','rail','diffu','claque','mire','objectif','travelling'];
+// Relais TURN : mis dans relay.json (même dossier) -> { "iceServers": [ { urls:[...], username:"...", credential:"..." } ] }
 const ICE = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:global.stun.twilio.com:3478' }
-  // RELAIS TURN (utile en 4G/5G) : coller ici les identifiants du service de relais, par exemple :
-  // { urls: ['turn:HOTE:80', 'turns:HOTE:443?transport=tcp'], username: '...', credential: '...' }
 ]};
+let relayOn = false;
 
 // ---- Outils ----
 const $ = id => document.getElementById(id);
-const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -143,39 +195,110 @@ function parseChannels(str) {
   });
   return out;
 }
+const pick = () => WORDS[Math.floor(Math.random() * WORDS.length)];
+const newCode = () => { let a = pick(), b = pick(); while (b === a) b = pick(); return a + '-' + b + '-' + (10 + Math.floor(Math.random() * 90)); };
 
 // ---- Etat ----
 let base = null, actx = null, myName = '', room = '', joined = false;
 let mode = 'hold', talking = false, broadcast = false, talkChan = '';
-let wakeLock = null, rescanT = null, meterT = null;
+let wakeLock = null, rescanT = null, meterT = null, keepAlive = null;
 const channels = [];   // { name, key, peer, cand, slot, remotes, pending, listen, status, claiming, claimAt, out }
 
-// ---- Préremplissage ----
+// ---- Ecran d'accueil ----
 const params = new URLSearchParams(location.search);
 $('name').value = store.get('mt_name') || '';
-$('room').value = params.get('room') || store.get('mt_room') || '';
-$('chs').value = params.get('ch') || store.get('mt_chs') || DEFAULT_CHANNELS;
+$('chs').value = store.get('mt_chs') || DEFAULT_CHANNELS;
 
-// ---- Rejoindre ----
-$('go').onclick = async () => {
-  const err = m => { $('err').textContent = m; };
-  err('');
-  myName = $('name').value.trim().slice(0, 20) || 'Anonyme';
-  room = slug($('room').value);
-  const list = parseChannels($('chs').value);
-  if (!room) return err('Entre un code de tournage.');
-  if (!list.length) return err('Entre au moins un canal.');
-  if (!window.RTCPeerConnection) return err('Ce navigateur ne gère pas l\'audio en direct. Utilise Safari (iPhone) ou Chrome (Android), à jour.');
-  if (typeof Peer === 'undefined') return err('Connexion impossible : le composant réseau n\'a pas chargé. Vérifie ta connexion et recharge.');
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return err('Micro indisponible : ouvre la page en https.');
-  store.set('mt_name', myName); store.set('mt_room', room); store.set('mt_chs', list.map(c => c.name).join(', '));
-  try {
-    base = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-  } catch (e) {
-    return err('Micro refusé. Autorise-le dans les réglages du navigateur, puis recharge.');
+function editorRow(val) {
+  const r = document.createElement('div'); r.className = 'edrow';
+  const i = document.createElement('input'); i.value = val || ''; i.maxLength = 16; i.placeholder = 'Nom du canal'; i.autocomplete = 'off';
+  const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Retirer');
+  x.onclick = () => { if ($('chEditor').children.length > 1) { r.remove(); updAdd(); } };
+  r.append(i, x); return r;
+}
+function updAdd() { $('addCh').classList.toggle('hide', $('chEditor').children.length >= MAX_CHANNELS); }
+function fillEditor(str) {
+  $('chEditor').innerHTML = '';
+  parseChannels(str).forEach(c => $('chEditor').append(editorRow(c.name)));
+  updAdd();
+}
+fillEditor(DEFAULT_CHANNELS);
+$('addCh').onclick = () => {
+  if ($('chEditor').children.length >= MAX_CHANNELS) return;
+  const r = editorRow(''); $('chEditor').append(r); updAdd();
+  r.firstChild.focus(); $('chEditor').scrollTop = $('chEditor').scrollHeight;
+};
+const editorValue = () => Array.from($('chEditor').querySelectorAll('input')).map(i => i.value).join(',');
+
+const invRoom = slug(params.get('room') || '');
+if (invRoom) {
+  const list = parseChannels(params.get('ch') || DEFAULT_CHANNELS);
+  $('invRoom').textContent = invRoom;
+  $('invChs').textContent = 'Canaux : ' + list.map(c => c.name).join(', ');
+  $('invited').classList.remove('hide'); $('joinBtn').classList.remove('hide');
+  $('createBox').classList.add('hide'); $('codeBox').classList.add('hide');
+  $('joinBtn').onclick = () => start(invRoom, list);
+} else {
+  const lr = store.get('mt_room'), lc = store.get('mt_chs');
+  if (lr && lc) {
+    $('resume').textContent = 'Reprendre « ' + lr + ' »';
+    $('resume').classList.remove('hide');
+    $('resume').onclick = () => start(lr, parseChannels(lc));
   }
+}
+$('create').onclick = () => {
+  const list = parseChannels(editorValue());
+  if (!list.length) return setErr('Entre au moins un canal.');
+  start(newCode(), list, true);
+};
+$('goCode').onclick = () => {
+  const r = slug($('room').value), list = parseChannels($('chs').value);
+  if (!r) return setErr('Entre le code du tournage.');
+  if (!list.length) return setErr('Entre au moins un canal.');
+  start(r, list);
+};
+function setErr(m) { $('err').textContent = m; }
+
+// ---- Démarrage ----
+function gum() { return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+
+async function loadRelay() {
+  try {
+    const r = await fetch('relay.json', { cache: 'no-store' });
+    if (r.ok) {
+      const j = await r.json();
+      if (Array.isArray(j.iceServers) && j.iceServers.length) { ICE.iceServers.push(...j.iceServers); relayOn = true; }
+    }
+  } catch (e) {}
+  if (params.get('relay') === 'only') ICE.iceTransportPolicy = 'relay';   // test : force le passage par le relais
+}
+
+// Audio silencieux en boucle : garde la session audio du téléphone active (écran éteint / autre app)
+function silentWavUrl() {
+  const n = 8000, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 8000, true);
+  v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+
+async function start(roomName, list, created) {
+  setErr('');
+  myName = $('name').value.trim().slice(0, 20) || 'Anonyme';
+  room = roomName;
+  if (!window.RTCPeerConnection) return setErr('Ce navigateur ne gère pas l\'audio en direct. Utilise Safari (iPhone) ou Chrome (Android), à jour.');
+  if (typeof Peer === 'undefined') return setErr('Connexion impossible : le composant réseau n\'a pas chargé. Vérifie ta connexion et recharge.');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return setErr('Micro indisponible : ouvre la page en https.');
+  store.set('mt_name', myName); store.set('mt_room', room); store.set('mt_chs', list.map(c => c.name).join(', '));
+  try { base = await gum(); } catch (e) { return setErr('Micro refusé. Autorise-le dans les réglages du navigateur, puis recharge.'); }
+  await loadRelay();
   actx = new (window.AudioContext || window.webkitAudioContext)();
   actx.resume();
+  keepAlive = document.createElement('audio');
+  keepAlive.src = silentWavUrl(); keepAlive.loop = true; keepAlive.playsInline = true;
+  keepAlive.play().catch(() => {});
   channels.length = 0;
   list.forEach(c => channels.push({
     name: c.name, key: c.key, peer: null, cand: null, slot: 0, remotes: {}, pending: {}, listen: true,
@@ -186,15 +309,18 @@ $('go').onclick = async () => {
   talkChan = channels[0].key; mode = 'hold'; talking = false; broadcast = false;
   document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === 'hold'));
   $('roomTitle').textContent = room; $('who').textContent = myName;
+  $('status').textContent = relayOn ? 'Relais 4G/5G actif' : '';
   $('join').classList.add('hide'); $('call').classList.remove('hide');
   joined = true;
+  base.getAudioTracks()[0].addEventListener('ended', () => { if (joined) $('mic').classList.remove('hide'); });
   updateOutputs();
   channels.forEach(ch => claimSlot(ch, 1));
   try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
   setupMediaSession();
   rescanT = setInterval(rescan, 15000);
   meterT = setInterval(meter, 150);
-};
+  if (created) showInvite();
+}
 
 const idFor = (ch, n) => `moteur-${room}-${ch.key}-${n}`;
 
@@ -314,6 +440,8 @@ function rescan() {
       for (let i = 1; i <= MAX_SLOTS; i++) if (i !== ch.slot) dial(ch, i);
     }
   });
+  const t = base && base.getAudioTracks()[0];
+  if (t && t.readyState === 'ended') $('mic').classList.remove('hide');
 }
 
 // ---- Qui parle ----
@@ -337,7 +465,8 @@ function chip(text, cls) {
   d.className = 'chip ' + cls; d.textContent = text; return d;
 }
 function renderChans() {
-  const box = $('chans'); box.innerHTML = '';
+  const box = $('chans'), keep = box.scrollTop;
+  box.innerHTML = '';
   channels.forEach(ch => {
     const card = document.createElement('div');
     card.className = 'card' + (ch.key === talkChan ? ' talk' : '');
@@ -360,6 +489,7 @@ function renderChans() {
     });
     card.append(head, chips); box.append(card);
   });
+  box.scrollTop = keep;
 }
 
 // ---- Micro / push-to-talk ----
@@ -370,6 +500,8 @@ function updateOutputs() {
   $('ptt').textContent = (mode === 'open' ? 'MICRO OUVERT' : talking ? 'EN ANTENNE' : 'PARLER') + ' → ' + target;
   $('ptt').classList.toggle('live', talking);
   $('all').classList.toggle('live', talking && broadcast);
+  $('pocketLive').classList.toggle('hide', !talking);
+  $('pocketInfo').textContent = room + ' · ' + (broadcast ? 'TOUS' : (cur ? cur.name : ''));
   renderChans();
 }
 function press(all) {
@@ -383,7 +515,7 @@ function press(all) {
 function release() {
   if (mode === 'hold' && talking) { talking = false; broadcast = false; updateOutputs(); }
 }
-[['ptt', false], ['all', true]].forEach(([id, all]) => {
+[['ptt', false], ['all', true], ['pocketPtt', false]].forEach(([id, all]) => {
   const b = $(id);
   b.addEventListener('pointerdown', e => { e.preventDefault(); press(all); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, release));
@@ -400,24 +532,57 @@ document.querySelectorAll('.modes button').forEach(b => b.onclick = () => {
 function setupMediaSession() {
   if (!('mediaSession' in navigator)) return;
   try {
-    navigator.mediaSession.metadata = new MediaMetadata({ title: 'Moteur', artist: room });
+    navigator.mediaSession.metadata = new MediaMetadata({ title: 'Moteur!', artist: room });
+    navigator.mediaSession.playbackState = 'playing';
     const toggle = () => { if (mode !== 'open') { talking = !talking; broadcast = false; updateOutputs(); } };
     ['play', 'pause'].forEach(a => navigator.mediaSession.setActionHandler(a, toggle));
   } catch (e) {}
 }
 
+// ---- Micro coupé par le système : on le récupère sans quitter ----
+async function reviveMic() {
+  try {
+    const nb = await gum();
+    const nt = nb.getAudioTracks()[0];
+    channels.forEach(ch => {
+      const old = ch.out.getAudioTracks()[0], t = nt.clone();
+      t.enabled = false;
+      Object.values(ch.remotes).forEach(r => {
+        try { r.call.peerConnection.getSenders().forEach(s => { if (s.track === old) s.replaceTrack(t); }); } catch (e) {}
+      });
+      ch.out.addTrack(t);
+      if (old) { ch.out.removeTrack(old); old.stop(); }
+    });
+    if (base) base.getTracks().forEach(t => t.stop());
+    base = nb;
+    nt.addEventListener('ended', () => { if (joined) $('mic').classList.remove('hide'); });
+    $('mic').classList.add('hide');
+    updateOutputs();
+  } catch (e) { $('status').textContent = 'Impossible de réactiver le micro : réessaie.'; }
+}
+$('micFix').onclick = reviveMic;
+
+// ---- Mode poche : écran noir, tout reste actif ----
+let pocketT = null;
+function openPocket() { $('pocket').classList.remove('hide'); updateOutputs(); }
+$('pocketBtn').onclick = openPocket;
+const po = $('pocketOut');
+po.addEventListener('pointerdown', e => { e.preventDefault(); pocketT = setTimeout(() => $('pocket').classList.add('hide'), 1000); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => po.addEventListener(ev, () => clearTimeout(pocketT)));
+
 // ---- Invitation ----
 function shareUrl() {
   return location.origin + location.pathname + '?room=' + encodeURIComponent(room) + '&ch=' + encodeURIComponent(channels.map(c => c.name).join(','));
 }
-$('invite').onclick = () => {
+function showInvite() {
   const url = shareUrl();
-  $('link').value = url;
+  $('link').value = url; $('codeShow').textContent = room;
   const q = $('qr'); q.innerHTML = '';
   try { new QRCode(q, { text: url, width: 220, height: 220, colorDark: '#000000', colorLight: '#ffffff' }); }
   catch (e) { q.textContent = 'QR indisponible, utilise le lien.'; }
   $('modal').classList.remove('hide');
-};
+}
+$('invite').onclick = showInvite;
 $('close').onclick = () => $('modal').classList.add('hide');
 $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText($('link').value); $('copy').textContent = 'Copié'; setTimeout(() => { $('copy').textContent = 'Copier le lien'; }, 1500); }
@@ -438,8 +603,10 @@ $('leave').onclick = () => {
   if (base) base.getTracks().forEach(t => t.stop());
   try { if (wakeLock) wakeLock.release(); } catch (e) {}
   try { if (actx) actx.close(); } catch (e) {}
+  try { if (keepAlive) { keepAlive.pause(); keepAlive.src = ''; } } catch (e) {}
+  try { navigator.mediaSession.playbackState = 'none'; } catch (e) {}
   base = null; talking = false; broadcast = false;
-  $('modal').classList.add('hide');
+  $('modal').classList.add('hide'); $('pocket').classList.add('hide'); $('mic').classList.add('hide');
   $('call').classList.add('hide'); $('join').classList.remove('hide');
 };
 
@@ -447,6 +614,9 @@ document.addEventListener('visibilitychange', async () => {
   if (!joined || document.visibilityState !== 'visible') return;
   try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
   if (actx && actx.state === 'suspended') actx.resume();
+  if (keepAlive && keepAlive.paused) keepAlive.play().catch(() => {});
+  const t = base && base.getAudioTracks()[0];
+  if (t && (t.readyState === 'ended' || t.muted)) $('mic').classList.remove('hide');
   channels.forEach(ch => Object.values(ch.remotes).forEach(r => { if (r.audio) { const p = r.audio.play(); if (p && p.catch) p.catch(() => {}); } }));
 });
 
