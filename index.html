@@ -260,7 +260,7 @@ $('goCode').onclick = () => {
 function setErr(m) { $('err').textContent = m; }
 
 // ---- Démarrage ----
-function gum() { return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+function gum() { return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1, latency: { ideal: 0.01 } } }); }
 
 async function loadRelay() {
   try {
@@ -299,7 +299,7 @@ async function start(roomName, list, created) {
   store.set('mt_name', myName); store.set('mt_room', room); store.set('mt_chs', list.map(c => c.name).join(', '));
   try { base = await gum(); } catch (e) { return setErr('Micro refusé. Autorise-le dans les réglages du navigateur, puis recharge.'); }
   await loadRelay();
-  actx = new (window.AudioContext || window.webkitAudioContext)();
+  actx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
   actx.resume();
   keepAlive = document.createElement('audio');
   keepAlive.src = silentWavUrl(); keepAlive.loop = true; keepAlive.playsInline = true;
@@ -387,9 +387,21 @@ function onData(ch, conn) {
 }
 
 // ---- Audio distant ----
+// Tampon de réception le plus court possible (un peu moins de marge contre les coupures, beaucoup moins de retard)
+function lowLatency(call) {
+  try {
+    call.peerConnection.getReceivers().forEach(rc => {
+      if (rc.track && rc.track.kind === 'audio') {
+        if ('jitterBufferTarget' in rc) rc.jitterBufferTarget = 20;
+        if ('playoutDelayHint' in rc) rc.playoutDelayHint = 0.02;
+      }
+    });
+  } catch (e) {}
+}
 function attach(ch, id, s, call) {
   const r = ch.remotes[id] || (ch.remotes[id] = { name: '…', speaking: false });
   r.call = call;
+  lowLatency(call);
   if (!r.audio) {
     r.audio = document.createElement('audio');
     r.audio.autoplay = true; r.audio.playsInline = true;
@@ -423,14 +435,16 @@ function setName(ch, id, name) {
 async function checkRoute(r) {
   try {
     const stats = await r.call.peerConnection.getStats();
-    let route = '';
+    let route = '', rtt = 0, jb = 0;
     stats.forEach(s => {
       if (s.type === 'candidate-pair' && s.nominated && s.state === 'succeeded') {
         const l = stats.get(s.localCandidateId), rc = stats.get(s.remoteCandidateId);
         route = ((l && l.candidateType === 'relay') || (rc && rc.candidateType === 'relay')) ? 'relais' : 'direct';
+        if (typeof s.currentRoundTripTime === 'number') rtt = s.currentRoundTripTime * 1000;
       }
+      if (s.type === 'inbound-rtp' && s.kind === 'audio' && s.jitterBufferEmittedCount > 0) jb = s.jitterBufferDelay / s.jitterBufferEmittedCount * 1000;
     });
-    r.route = route; renderChans();
+    r.route = route; r.ms = rtt / 2 + jb; renderChans();
   } catch (e) {}
 }
 
@@ -447,6 +461,7 @@ function rescan() {
   });
   const t = base && base.getAudioTracks()[0];
   if (t && t.readyState === 'ended') $('mic').classList.remove('hide');
+  channels.forEach(ch => Object.values(ch.remotes).forEach(r => { if (r.call && r.audio) checkRoute(r); }));
 }
 
 // ---- Qui parle ----
@@ -492,7 +507,7 @@ function renderChans() {
     chips.append(chip(myName + ' (moi)', 'me' + (isOut(ch) ? ' speaking' : '')));
     Object.values(ch.remotes).forEach(r => {
       if (!r.audio) return;
-      chips.append(chip(r.name + (r.route === 'relais' ? ' · relais' : ''), r.speaking ? 'speaking' : ''));
+      chips.append(chip(r.name + (r.route === 'relais' ? ' · relais' : '') + (r.ms ? ' · ' + Math.round(r.ms) + ' ms' : ''), r.speaking ? 'speaking' : ''));
     });
     card.append(head, chips); box.append(card);
   });
