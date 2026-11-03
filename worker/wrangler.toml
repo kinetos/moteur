@@ -1,6 +1,7 @@
 name = "moteur-signal"
 main = "worker.js"
 compatibility_date = "2024-11-01"
+workers_dev = true
 
 [[durable_objects.bindings]]
 name = "ROOM"
