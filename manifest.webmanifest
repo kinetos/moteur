@@ -1,6 +1,6 @@
 {
-  "name": "Sync · intercom de tournage",
-  "short_name": "Sync",
+  "name": "CrewSync · intercom de tournage",
+  "short_name": "CrewSync",
   "description": "Intercom de tournage sur smartphone",
   "start_url": "./",
   "scope": "./",
