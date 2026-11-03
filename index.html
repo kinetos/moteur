@@ -201,7 +201,6 @@ if (invited) {
 }
 try {
   const last = JSON.parse(store.get('moteur.last') || 'null');
-  if (last && !invited) { const b = $('#resume'); b.textContent = 'Reprendre « ' + last.shoot + ' »'; b.classList.remove('hide'); b.onclick = () => begin(last.room, last.shoot, last.list); }
 } catch (e) {}
 const isIOS = /iphone|ipad/i.test(navigator.userAgent), standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
 if (/FBAN|FBAV|Instagram|Line\/|Messenger|; wv\)/i.test(navigator.userAgent)) $('#iosHint').textContent = 'Ouvre ce lien dans Safari (iPhone) ou Chrome (Android) : le micro est bloqué ici.';
