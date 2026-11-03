@@ -395,7 +395,10 @@ async function stat(m) {
     if (!pair) st.forEach(r => { if (r.type === 'candidate-pair' && r.nominated && r.state === 'succeeded') pair = r; });
     if (pair) {
       const lc = st.get(pair.localCandidateId), rc = st.get(pair.remoteCandidateId);
-      m.route = ((lc && lc.candidateType === 'relay') || (rc && rc.candidateType === 'relay')) ? 'relais' : 'direct';
+      const lr = lc && lc.candidateType === 'relay', rr = rc && rc.candidateType === 'relay';
+      let who = '';
+      if (lr) { const u = String(lc.url || ''); who = /expressturn/.test(u) ? ' ExpressTURN' : /metered/.test(u) ? ' Metered' : /cloudflare/.test(u) ? ' Cloudflare' : ''; }
+      m.route = (lr || rr) ? 'relais' + (lr ? who : ' (via l’autre)') : 'direct';
       if (pair.currentRoundTripTime) m.ms = Math.round(pair.currentRoundTripTime * 500);
     }
   } catch (e) {}
@@ -429,13 +432,15 @@ function setTalk(ch, v) { ch.talk = v; if (v) mainCh = ch; chans.forEach(applyTr
 
 /* ---------- Interface ---------- */
 let relayState = '';
+let relayNames = [];
 async function probeRelay() {
   try {
     if (!ICE.some(s => [].concat(s.urls).some(u => /^turns?:/.test(u)))) { relayState = 'none'; return update(); }
     const pc = new RTCPeerConnection({ iceServers: ICE, iceTransportPolicy: 'relay' }); let ok = false;
-    pc.onicecandidate = e => { if (e.candidate && /typ relay/.test(e.candidate.candidate)) ok = true; };
+    pc.onicecandidate = e => { if (e.candidate && /typ relay/.test(e.candidate.candidate)) { ok = true; const u = String(e.candidate.url || ''); const n = /expressturn/.test(u) ? 'ExpressTURN' : /metered/.test(u) ? 'Metered' : ''; if (n && relayNames.indexOf(n) < 0) relayNames.push(n); } };
     pc.createDataChannel('p'); await pc.setLocalDescription(await pc.createOffer());
     for (let i = 0; i < 40 && !ok; i++) await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 1500));
     pc.close(); relayState = ok ? 'ok' : 'ko';
   } catch (e) { relayState = 'ko'; }
   update();
@@ -479,7 +484,7 @@ function update() {
   const down = !wsOk && wsDownAt && Date.now() - wsDownAt > 2500;
   $('#dot').className = 'dot ' + (down ? 'warn' : wsOk ? 'ok' : '');
   $('#status').textContent = down ? 'Reconnexion… l’audio en cours continue' : (me.name + (wsOk ? ' · connecté' : ' · connexion…') + (relayState === 'ok' ? ' · relais prêt' : relayState === 'ko' ? ' · relais HS' : ''));
-  $('#diag').textContent = 'Serveur : ' + (wsOk ? 'connecté' : 'hors ligne') + ' · Relais : ' + (relayState === 'ok' ? 'prêt' : relayState === 'ko' ? 'injoignable' : relayState === 'none' ? 'absent' : 'test…');
+  $('#diag').textContent = 'Serveur : ' + (wsOk ? 'connecté' : 'hors ligne') + ' · Relais : ' + (relayState === 'ok' ? 'prêt' + (relayNames.length ? ' (' + relayNames.join(' + ') + ')' : '') : relayState === 'ko' ? 'injoignable' : relayState === 'none' ? 'absent' : 'test…');
   for (const ch of chans) {
     const d = $('#r-' + ch.key); if (!d) continue;
     const hearing = ch.on && [...ch.members.values()].some(m => m.speak);
