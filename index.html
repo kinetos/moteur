@@ -21,6 +21,13 @@
   input,textarea { width:100%; padding:14px; border-radius:14px; border:1px solid var(--line); background:var(--card); color:var(--txt); font:inherit; font-size:17px; }
   label { display:block; font-size:12px; color:var(--dim); margin:16px 0 6px; text-transform:uppercase; letter-spacing:.07em; }
   .hide { display:none !important; }
+  #hist { margin:18px 0 4px; }
+  #hist h3 { font-size:12px; color:var(--dim); margin:0 0 8px; text-transform:uppercase; letter-spacing:.07em; font-weight:600; }
+  #hist .hr { display:flex; gap:8px; margin-bottom:8px; }
+  #hist .hb { flex:1; min-width:0; text-align:left; padding:13px 14px; border-radius:14px; border:1px solid var(--line); background:var(--card); color:var(--txt); font:inherit; font-size:16px; display:flex; justify-content:space-between; gap:10px; }
+  #hist .hb b { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #hist .hb small { color:var(--dim); font-size:13px; white-space:nowrap; align-self:center; }
+  #hist .hx { width:44px; border-radius:14px; border:1px solid var(--line); background:none; color:var(--dim); font-size:18px; }
   h1 { font-size:20px; margin:18px 0 4px; letter-spacing:.02em; } h1 span { color:var(--acc); }
   .sub { color:var(--dim); margin:0 0 6px; font-size:14px; }
   .big { width:100%; margin-top:20px; padding:16px; font-size:19px; font-weight:700; background:var(--acc); border-color:var(--acc); }
@@ -90,6 +97,7 @@
   <label for="nm">Ton prénom</label>
   <input id="nm" maxlength="14" autocomplete="given-name" placeholder="Ex. Guillaume">
 
+  <div id="hist" class="hide"></div>
   <div id="createBox">
     <label for="sh">Nom du tournage</label>
     <input id="sh" maxlength="36" placeholder="Ex. Clip Dupont, jour 2">
@@ -102,7 +110,6 @@
 
   <p class="err" id="err"></p>
   <button class="big" id="go">Créer le tournage</button>
-  <button class="link hide" id="resume"></button>
   <details id="joinBox">
     <summary>J'ai reçu un lien ou un code</summary>
     <input id="code" placeholder="Colle le lien ou le code ici" autocapitalize="off" autocorrect="off">
@@ -200,8 +207,29 @@ if (invited) {
   $('#go').textContent = 'Rejoindre'; $('#joinBox').classList.add('hide');
 }
 try {
-  const last = JSON.parse(store.get('moteur.last') || 'null');
+  if (!invited) renderHist();
 } catch (e) {}
+function getHist() { try { const h = JSON.parse(store.get('moteur.hist') || '[]'); return Array.isArray(h) ? h : []; } catch (e) { return []; } }
+function histAdd(room, shoot, list) {
+  const h = getHist().filter(x => x.room !== room);
+  h.unshift({ room, shoot, list, t: Date.now() });
+  store.set('moteur.hist', JSON.stringify(h.slice(0, 15)));
+}
+function renderHist() {
+  const h = getHist(), box = $('#hist'); box.innerHTML = '';
+  if (!h.length) return box.classList.add('hide');
+  box.classList.remove('hide');
+  box.innerHTML = '<h3>Tournages récents</h3>';
+  h.forEach(x => {
+    const r = document.createElement('div'); r.className = 'hr';
+    const b = document.createElement('button'); b.className = 'hb';
+    b.innerHTML = '<b>' + esc(x.shoot) + '</b><small>' + new Date(x.t).toLocaleDateString('fr-BE', { day: 'numeric', month: 'short' }) + '</small>';
+    b.onclick = () => begin(x.room, x.shoot, x.list);
+    const d = document.createElement('button'); d.className = 'hx'; d.textContent = '×'; d.setAttribute('aria-label', 'Retirer de la liste');
+    d.onclick = () => { store.set('moteur.hist', JSON.stringify(getHist().filter(y => y.room !== x.room))); renderHist(); };
+    r.appendChild(b); r.appendChild(d); box.appendChild(r);
+  });
+}
 const isIOS = /iphone|ipad/i.test(navigator.userAgent), standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
 if (/FBAN|FBAV|Instagram|Line\/|Messenger|; wv\)/i.test(navigator.userAgent)) $('#iosHint').textContent = 'Ouvre ce lien dans Safari (iPhone) ou Chrome (Android) : le micro est bloqué ici.';
 else if (isIOS && !standalone) $('#iosHint').textContent = 'Astuce iPhone : Partager → « Sur l’écran d’accueil » pour l’avoir comme une vraie app.';
@@ -238,7 +266,7 @@ async function begin(r, sh, list, created) {
   if (!me.id) { me.id = rid(10); try { sessionStorage.setItem('moteur.id', me.id); } catch (e) {} }
   try { mic = await gum(); } catch (e) { return err('Micro refusé. Autorise le micro pour ce site, puis réessaie.'); }
   room = r; shoot = sh;
-  store.set('moteur.last', JSON.stringify({ room, shoot, list }));
+  histAdd(room, shoot, list);
   await loadIce();
   ac = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
   startKeepAlive(); hookMic();
