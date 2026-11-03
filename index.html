@@ -49,7 +49,7 @@
   #mic button { padding:8px 12px; background:var(--acc); border-color:var(--acc); font-weight:700; }
   #chans { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; margin-bottom:8px; padding-right:2px; }
   #chans::-webkit-scrollbar { width:4px; } #chans::-webkit-scrollbar-thumb { background:#3a3a42; border-radius:4px; }
-  .card { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:8px 12px 10px; margin-bottom:8px; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:6px 12px 8px; margin-bottom:6px; }
   .card.talk { border-color:var(--acc); }
   .card.offc { opacity:.55; }
   .ch-head { display:flex; align-items:center; gap:8px; }
@@ -68,8 +68,8 @@
   .modes button.on { background:#2a2a30; border-color:var(--acc); }
   #status { color:var(--dim); font-size:12px; min-height:16px; margin-bottom:6px; }
   .ptts { display:flex; gap:10px; margin-bottom:16px; }
-  #ptt { flex:1; height:24vh; min-height:120px; border-radius:26px; font-size:19px; font-weight:800; letter-spacing:.05em; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
-  #all { width:30%; height:24vh; min-height:120px; border-radius:26px; font-size:17px; font-weight:800; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #ptt { flex:1; height:18vh; min-height:96px; border-radius:26px; font-size:19px; font-weight:800; letter-spacing:.05em; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
+  #all { width:30%; height:18vh; min-height:96px; border-radius:26px; font-size:17px; font-weight:800; border:3px solid var(--line); touch-action:none; user-select:none; -webkit-user-select:none; }
   #ptt.live, #all.live { background:var(--acc); border-color:#ffb199; }
   #modal { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; padding:16px; z-index:20; }
   .sheet { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; align-items:stretch; max-height:100%; overflow-y:auto; }
@@ -129,7 +129,7 @@
     <div class="row">
       <button id="invite">Inviter</button>
       <button id="pocketBtn">Poche</button>
-      <button id="leave">Quitter</button>
+      <button id="leave">Sortir</button>
     </div>
   </div>
   <div id="mic" class="hide"><span>Le micro a été coupé (écran verrouillé ou autre app).</span><button id="micFix">Réactiver</button></div>
@@ -367,8 +367,8 @@ function claimSlot(ch, n) {
   });
   p.on('disconnected', () => {
     if (!joined || !ch.on) return;
-    ch.status = 'reconnexion…'; renderChans();
-    setTimeout(() => { try { if (joined && ch.on && !p.destroyed) p.reconnect(); } catch (e) {} }, 2000);
+    setTimeout(() => { if (joined && ch.on && p.disconnected && !p.destroyed) { ch.status = 'reconnexion…'; renderChans(); } }, 6000);
+    setTimeout(() => { try { if (joined && ch.on && !p.destroyed) p.reconnect(); } catch (e) {} }, 1000);
   });
 }
 
@@ -522,6 +522,7 @@ function renderChans() {
       if (!r.audio) return;
       chips.append(chip(r.name + (r.route === 'relais' ? ' · relais' : '') + (r.ms ? ' · ' + Math.round(r.ms) + ' ms' : ''), r.speaking ? 'speaking' : ''));
     });
+    if (ch.on && !Object.values(ch.remotes).some(r => r.audio)) chips.append(chip('personne d\'autre pour l\'instant', 'me'));
     card.append(head, chips); box.append(card);
   });
   box.scrollTop = keep;
