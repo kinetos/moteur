@@ -260,11 +260,11 @@ async function loadIce() {
   try {
     const j = await (await fetch(SIG + '/turn', { cache: 'no-store' })).json();
     let s = j.iceServers; if (s && !Array.isArray(s)) s = [s];
-    if (s && s.length) { ICE = STUN.concat(s); return; }
+    if (s && s.length) ICE = STUN.concat(s);
   } catch (e) {}
   try {
     const j = await (await fetch('relay.json', { cache: 'no-store' })).json();
-    if (j.username && j.credential) ICE = STUN.concat([{ urls: ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp', 'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp'], username: j.username, credential: j.credential }]);
+    if (j.username && j.credential) ICE = ICE.concat([{ urls: ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp', 'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp'], username: j.username, credential: j.credential }]);
   } catch (e) {}
 }
 function makeTrack(ch) {
