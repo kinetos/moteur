@@ -51,7 +51,6 @@
   #chans::-webkit-scrollbar { width:4px; } #chans::-webkit-scrollbar-thumb { background:#3a3a42; border-radius:4px; }
   .card { background:var(--card); border:2px solid var(--line); border-radius:16px; padding:8px 12px 10px; margin-bottom:8px; }
   .card.talk { border-color:var(--acc); }
-  .card.offc { opacity:.55; }
   .ch-head { display:flex; align-items:center; gap:8px; }
   .ch-name { flex:1; text-align:left; font-weight:700; font-size:17px; background:none; border:0; padding:6px 0; color:var(--txt); }
   .card.talk .ch-name::after { content:"  · tu parles ici"; color:var(--acc); font-weight:500; font-size:12px; }
@@ -308,7 +307,7 @@ async function start(roomName, list, created) {
   channels.length = 0;
   list.forEach(c => channels.push({
     name: c.name, key: c.key, peer: null, cand: null, slot: 0, remotes: {}, pending: {}, listen: true,
-    status: 'hors ligne', on: false, claiming: false, claimAt: 0,
+    status: 'connexion…', claiming: false, claimAt: 0,
     out: new MediaStream([base.getAudioTracks()[0].clone()])
   }));
   channels.forEach(ch => ch.out.getAudioTracks().forEach(t => { t.enabled = false; }));
@@ -320,7 +319,7 @@ async function start(roomName, list, created) {
   joined = true;
   base.getAudioTracks()[0].addEventListener('ended', () => { if (joined) $('mic').classList.remove('hide'); });
   updateOutputs();
-  joinChan(channels[0]);
+  channels.forEach(ch => claimSlot(ch, 1));
   try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
   setupMediaSession();
   rescanT = setInterval(rescan, 15000);
@@ -330,44 +329,31 @@ async function start(roomName, list, created) {
 
 const idFor = (ch, n) => `moteur-${room}-${ch.key}-${n}`;
 
-function joinChan(ch) {
-  if (ch.on) return;
-  ch.on = true; ch.status = 'connexion…';
-  claimSlot(ch, 1); renderChans();
-}
-function leaveChan(ch) {
-  ch.on = false; ch.status = 'hors ligne'; ch.claiming = false;
-  Object.keys(ch.remotes).forEach(id => detach(ch, id));
-  try { if (ch.peer) ch.peer.destroy(); } catch (e) {}
-  try { if (ch.cand) ch.cand.destroy(); } catch (e) {}
-  ch.peer = null; ch.cand = null; ch.slot = 0;
-  if (talkChan === ch.key) { const n = channels.find(c => c.on); if (n) talkChan = n.key; }
-  updateOutputs();
-}
-
 function claimSlot(ch, n) {
-  if (!joined || !ch.on) return;
+  if (!joined) return;
   if (n > MAX_SLOTS) { ch.status = 'canal complet'; ch.claiming = false; renderChans(); return; }
   ch.claiming = true; ch.claimAt = Date.now();
   if (ch.cand && n === 1) { try { ch.cand.destroy(); } catch (e) {} }
   const p = new Peer(idFor(ch, n), { config: ICE });
   ch.cand = p;
   p.on('open', () => {
-    if (!joined || !ch.on) { p.destroy(); return; }
+    if (!joined) { p.destroy(); return; }
     ch.peer = p; ch.slot = n; ch.claiming = false; ch.status = 'en ligne';
-    if (!p._wired) { p._wired = true; p.on('call', c => onCall(ch, c)); p.on('connection', c => onData(ch, c)); }
+    p.on('call', c => onCall(ch, c));
+    p.on('connection', c => onData(ch, c));
     for (let i = 1; i <= MAX_SLOTS; i++) if (i !== n) dial(ch, i);
+    [3000, 8000].forEach(ms => setTimeout(() => { if (joined && ch.on && ch.peer === p && p.open) for (let i = 1; i <= MAX_SLOTS; i++) if (i !== n) dial(ch, i); }, ms));
     renderChans();
   });
   p.on('error', e => {
     if (e.type === 'unavailable-id') { p.destroy(); claimSlot(ch, n + 1); }
-    else if (e.type === 'peer-unavailable') { /* personne sur ce slot : normal */ }
+    else if (e.type === 'peer-unavailable') { const m = /peer (\S+)/.exec(e.message || ''); if (m) delete ch.pending[m[1]]; }
     else { ch.status = 'réseau instable'; renderChans(); }
   });
   p.on('disconnected', () => {
-    if (!joined || !ch.on) return;
+    if (!joined) return;
     ch.status = 'reconnexion…'; renderChans();
-    setTimeout(() => { try { if (joined && ch.on && !p.destroyed) p.reconnect(); } catch (e) {} }, 2000);
+    try { p.reconnect(); } catch (e) {}
   });
 }
 
@@ -468,7 +454,6 @@ function rescan() {
   if (!joined) return;
   const now = Date.now();
   channels.forEach(ch => {
-    if (!ch.on) return;
     if (ch.peer && ch.peer.destroyed) { ch.peer = null; ch.claiming = false; }
     if (!ch.peer) { if (!ch.claiming || now - ch.claimAt > 20000) claimSlot(ch, 1); return; }
     if (ch.peer.open) {
@@ -496,7 +481,7 @@ function meter() {
 }
 
 // ---- Affichage ----
-const isOut = ch => ch.on && talking && (broadcast || ch.key === talkChan);
+const isOut = ch => talking && (broadcast || ch.key === talkChan);
 function chip(text, cls) {
   const d = document.createElement('div');
   d.className = 'chip ' + cls; d.textContent = text; return d;
@@ -507,16 +492,20 @@ function renderChans() {
   box.innerHTML = '';
   channels.forEach(ch => {
     const card = document.createElement('div');
-    card.className = 'card' + (ch.key === talkChan ? ' talk' : '') + (ch.on ? '' : ' offc');
+    card.className = 'card' + (ch.key === talkChan ? ' talk' : '');
     const head = document.createElement('div'); head.className = 'ch-head';
     const nm = document.createElement('button'); nm.className = 'ch-name'; nm.textContent = ch.name;
-    nm.onclick = () => { if (!ch.on) joinChan(ch); talkChan = ch.key; updateOutputs(); };
+    nm.onclick = () => { talkChan = ch.key; updateOutputs(); };
     const st = document.createElement('span'); st.className = 'ch-st'; st.textContent = ch.status;
-    const tg = document.createElement('button'); tg.className = 'tog' + (ch.on ? '' : ' off'); tg.textContent = ch.on ? 'Quitter' : 'Rejoindre';
-    tg.onclick = () => { if (ch.on) leaveChan(ch); else joinChan(ch); };
+    const tg = document.createElement('button'); tg.className = 'tog' + (ch.listen ? '' : ' off'); tg.textContent = ch.listen ? 'Écoute' : 'Coupé';
+    tg.onclick = () => {
+      ch.listen = !ch.listen;
+      Object.values(ch.remotes).forEach(r => { if (r.audio) r.audio.muted = !ch.listen; });
+      renderChans();
+    };
     head.append(nm, st, tg);
     const chips = document.createElement('div'); chips.className = 'chips';
-    if (ch.on) chips.append(chip(myName + ' (moi)', 'me' + (isOut(ch) ? ' speaking' : '')));
+    chips.append(chip(myName + ' (moi)', 'me' + (isOut(ch) ? ' speaking' : '')));
     Object.values(ch.remotes).forEach(r => {
       if (!r.audio) return;
       chips.append(chip(r.name + (r.route === 'relais' ? ' · relais' : '') + (r.ms ? ' · ' + Math.round(r.ms) + ' ms' : ''), r.speaking ? 'speaking' : ''));
