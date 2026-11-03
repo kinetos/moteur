@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAADLklEQVR42u3dMVIbQRCG0ZkpQp/EB+Aazjmgcq6hA/gkzkXmgCoQQmi3+9/3UhOopr5qt8SOmKOAy8vzZdDePJ3n7q9BwCQFPkVMUtxTxCTFPYVMUthLzCR9GDCFTNK0XmImaVpPIZM0rZeYSZrWS8wkRb3ETFLUS8wkRb3ETFLUS8wkRb3ETFLUyzGRZJnOJE3pJWaSorZykL9ymM50ndJLzCRFbeUgd+Uwnek+pU1ojvM5NLQN2rpBwtphQmPlgNJBWzdIWTtMaKwcIGjYwLQ/k+TJETzOr9e/H/7bvz+/HZCg+4f8/meEbYduH/M9P4+gy8YsakGDoCtPZ1Na0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQMN1ZGylNzFW6WVH5tJnSzR0D3fryz8mszoZs+y7zHPcDKr82EBkHXu2my1X/xlV+boMOuTT06nMqvTdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQDA/4D9ejhicQ257xcj2KpDN+cj2KpDO2Q+NNoetRrqAJ2hUkZ2zlAEEjaBA0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0NAh6Hu+4dI3kB73jFfagYv52Gds5WD4kxQ7TJBr33ZpMjvjVhP6s8MUszNu+UeDhOuM7dAMH9uBoEHQIGgQNIIGQYOgQdAgaAQNggZBD1eQXEETdOwVJFfQBM1wBWuY0nWvILmCZkJHXkFyBc2EjntDJVwTGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBj0M/pedJOkGDoCtOadNZ0DFRi3m4sZJwR1HIjzHHGOPy8nxxFLSP+XSeVg7s0CBo2CroeTpPR0H3/dmExsoBLYK2dtB93TChsXJAm6CtHXReN0xo8lcOU5qu0/nDCS1qOsZs5eA4n3KY0nSbzlcntKjpFLOVg+P9YsWUpst0/vKEFjUdYr5p5RA11WO+eYcWNZVj/tabQlFTNeZvf8ohairGfNfHdqKmWsz/v2jmXr6ohr1D/tFfrJjWVGnox0M0rdlzGK7qLxAx7zqhTWv2HHqbTVNxi3izr9PdmrhFHBW0wAX8KG/YnFfB4BooNQAAAABJRU5ErkJggg==">
+<link rel="apple-touch-icon" href="icon.svg">
 <title>Moteur!</title>
 <style>
   :root { --bg:#0b0b0c; --card:#17171a; --line:#2a2a30; --txt:#f4f4f5; --dim:#8b8b94; --acc:#ff5a36; --ok:#2fd27a; }
@@ -230,6 +230,8 @@ function renderHist() {
     r.appendChild(b); r.appendChild(d); box.appendChild(r);
   });
 }
+/* icône iPhone : rendue en PNG à partir d'icon.svg */
+(function () { try { const img = new Image(); img.onload = () => { try { const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d'); x.fillStyle = '#ff5a36'; x.fillRect(0, 0, 180, 180); x.drawImage(img, 0, 0, 180, 180); const l = document.querySelector('link[rel=apple-touch-icon]'); if (l) l.href = c.toDataURL('image/png'); } catch (e) {} }; img.src = 'icon.svg'; } catch (e) {} })();
 const isIOS = /iphone|ipad/i.test(navigator.userAgent), standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
 if (/FBAN|FBAV|Instagram|Line\/|Messenger|; wv\)/i.test(navigator.userAgent)) $('#iosHint').textContent = 'Ouvre ce lien dans Safari (iPhone) ou Chrome (Android) : le micro est bloqué ici.';
 else if (isIOS && !standalone) $('#iosHint').textContent = 'Astuce iPhone : Partager → « Sur l’écran d’accueil » pour l’avoir comme une vraie app.';
