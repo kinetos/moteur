@@ -10,15 +10,22 @@ export default {
     }
     const cors = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
     if (url.pathname === '/turn') {
-      if (!env.TURN_KEY_ID || !env.TURN_API_TOKEN) return new Response('{"iceServers":[]}', { headers: cors });
-      try {
-        const r = await fetch('https://rtc.live.cloudflare.com/v1/turn/keys/' + env.TURN_KEY_ID + '/credentials/generate-ice-servers', {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + env.TURN_API_TOKEN, 'content-type': 'application/json' },
-          body: JSON.stringify({ ttl: 86400 })
-        });
-        return new Response(await r.text(), { headers: cors });
-      } catch (e) { return new Response('{"iceServers":[]}', { headers: cors }); }
+      // Relais secondaire (ex. ExpressTURN) : identifiants gardés en secrets du Worker, jamais dans le dépôt.
+      const out = [];
+      if (env.RELAY_URLS && env.RELAY_USER && env.RELAY_PASS) {
+        out.push({ urls: env.RELAY_URLS.split(',').map(s => s.trim()).filter(Boolean), username: env.RELAY_USER, credential: env.RELAY_PASS });
+      }
+      if (env.TURN_KEY_ID && env.TURN_API_TOKEN) {
+        try {
+          const r = await fetch('https://rtc.live.cloudflare.com/v1/turn/keys/' + env.TURN_KEY_ID + '/credentials/generate-ice-servers', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + env.TURN_API_TOKEN, 'content-type': 'application/json' },
+            body: JSON.stringify({ ttl: 86400 })
+          });
+          const j = await r.json(); const s = j.iceServers; if (Array.isArray(s)) out.push(...s); else if (s) out.push(s);
+        } catch (e) {}
+      }
+      return new Response(JSON.stringify({ iceServers: out }), { headers: cors });
     }
     return new Response('Moteur! signal OK', { headers: cors });
   }
