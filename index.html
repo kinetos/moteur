@@ -31,32 +31,33 @@
   .shoot { font-size:26px; font-weight:800; margin:6px 0 2px; word-break:break-word; }
   details { color:var(--dim); font-size:14px; margin-top:12px; } summary { padding:6px 0; cursor:pointer; }
   #panel { flex:1; min-height:0; display:flex; flex-direction:column; }
-  .top { display:flex; align-items:center; gap:8px; padding:8px 0 6px; }
+  .top { display:flex; align-items:center; gap:8px; padding:8px 0 4px; }
   .top .t { flex:1; min-width:0; }
-  .top .t b { display:block; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .top .t small { color:var(--dim); font-size:12px; }
-  .top .t small.warn { color:#ffb020; }
-  .top button { padding:9px 11px; font-size:14px; border-radius:12px; }
-  #chans { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:8px; padding:2px 0; }
-  .row { display:flex; gap:8px; flex:none; }
-  .ear { flex:1; min-width:0; text-align:left; display:flex; align-items:center; gap:12px; border-radius:18px; padding:10px 14px; min-height:76px; background:var(--card); border:2px solid var(--line); }
-  .ear .sw { flex:none; width:34px; height:20px; border-radius:20px; background:#34343b; position:relative; transition:.15s; }
-  .ear .sw::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#999; transition:.15s; }
-  .ear .tx { min-width:0; } .ear b { display:block; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ear small { display:block; color:var(--dim); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .row.on .ear { border-color:#35503f; } .row.on .ear .sw { background:var(--ok); } .row.on .ear .sw::after { left:16px; background:#fff; }
-  .row.hear .ear { border-color:var(--ok); box-shadow:0 0 0 2px #2fd27a44; }
-  .row.say .ear { border-color:var(--acc); }
-  .row:not(.on) .ear b { color:#b9b9c2; }
-  .ptt { flex:none; width:36%; font-weight:800; font-size:17px; letter-spacing:.06em; border-radius:18px; background:#26262b; border:2px solid #3a3a42; user-select:none; -webkit-user-select:none; touch-action:none; }
-  .row.on .ptt { background:#2b1a15; border-color:#6b3427; color:#ffd2c6; }
-  .row.say .ptt { background:var(--acc); border-color:var(--acc); color:#fff; }
-  .foot { padding:8px 0 6px; display:flex; flex-direction:column; gap:8px; }
-  #all { padding:18px; font-size:19px; font-weight:800; letter-spacing:.07em; border-radius:18px; background:#26262b; border:2px solid #3a3a42; touch-action:none; user-select:none; -webkit-user-select:none; }
+  .top .t b { display:block; font-size:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top .t small { color:var(--dim); font-size:12px; display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#555; flex:none; } .dot.ok { background:var(--ok); } .dot.warn { background:#ffb020; }
+  .top button { padding:9px 13px; font-size:15px; border-radius:12px; }
+  .lbl { color:var(--dim); font-size:12px; letter-spacing:.03em; margin:8px 2px 6px; }
+  #chans { flex:0 1 auto; max-height:34%; overflow-y:auto; overscroll-behavior:contain; display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:2px 0; }
+  .chip { display:flex; border-radius:16px; background:var(--card); border:2px solid var(--line); overflow:hidden; min-height:58px; }
+  .chip .cn { flex:1; min-width:0; text-align:left; background:none; border:0; border-radius:0; padding:8px 4px 8px 12px; }
+  .chip .cn b { display:block; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chip .cn small { display:block; color:var(--dim); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chip .sp { flex:none; width:44px; border:0; border-radius:0; background:none; font-size:19px; opacity:.4; }
+  .chip.on .sp { opacity:1; }
+  .chip.act { border-color:var(--acc); background:#2a1712; }
+  .chip.hear { box-shadow:0 0 0 3px #2fd27a77; }
+  .stage { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:6px 0; }
+  #big { width:min(62vw, 34dvh); aspect-ratio:1; border-radius:50%; font-size:22px; font-weight:800; letter-spacing:.05em; background:#26262b; border:3px solid #3a3a42; touch-action:none; user-select:none; -webkit-user-select:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; line-height:1.15; padding:10px; }
+  #big small { font-size:14px; font-weight:600; letter-spacing:0; color:#c9c9d1; max-width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #big.say { background:var(--acc); border-color:#ffb09f; box-shadow:0 0 0 12px #ff5a3633; } #big.say small { color:#fff; }
+  #who { min-height:22px; font-size:15px; text-align:center; color:var(--dim); padding:0 6px; }
+  #who .sp { color:var(--ok); font-weight:700; }
+  .foot { padding:4px 0 6px; display:flex; gap:8px; }
+  #all { flex:1; padding:14px; font-size:16px; font-weight:800; letter-spacing:.06em; border-radius:16px; background:#26262b; border:2px solid #3a3a42; touch-action:none; user-select:none; -webkit-user-select:none; }
   #all.say { background:var(--acc); border-color:var(--acc); }
-  .mode { display:flex; align-items:center; justify-content:space-between; color:var(--dim); font-size:13px; }
   .seg { display:flex; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  .seg button { border:0; border-radius:0; background:none; padding:8px 12px; font-size:13px; color:var(--dim); }
+  .seg button { flex:1; border:0; border-radius:0; background:none; padding:12px; font-size:15px; color:var(--dim); }
   .seg button.sel { background:#2d2d34; color:var(--txt); }
   #mic { background:#3a1a12; border:1px solid var(--acc); border-radius:12px; padding:10px 12px; margin-bottom:6px; font-size:14px; display:flex; gap:10px; align-items:center; }
   #mic span { flex:1; } #mic button { padding:8px 12px; background:var(--acc); border-color:var(--acc); font-weight:700; }
@@ -106,20 +107,28 @@
 
 <div id="panel" class="hide">
   <div class="top">
-    <div class="t"><b id="shootName"></b><small id="status"></small></div>
+    <div class="t"><b id="shootName"></b><small><i class="dot" id="dot"></i><span id="status"></span></small></div>
     <button id="btnInvite">Inviter</button>
-    <button id="btnPocket">Poche</button>
-    <button id="btnLeave">Sortir</button>
+    <button id="btnMenu" aria-label="Menu">⋯</button>
   </div>
   <div id="mic" class="hide"><span>Micro coupé par le téléphone.</span><button id="micFix">Réactiver</button></div>
+  <div class="lbl">Touche un canal pour parler dedans · 🔈 pour en écouter d'autres</div>
   <div id="chans"></div>
-  <div class="foot">
-    <button id="all">PARLER À TOUS</button>
-    <div class="mode"><span>Bouton PARLER :</span>
-      <div class="seg"><button id="mHold" class="sel">Maintenir</button><button id="mLatch">Verrouiller</button></div>
-    </div>
+  <div class="stage">
+    <button id="big"><span id="bigT">PARLER</span><small id="bigS"></small></button>
+    <div id="who"></div>
   </div>
+  <div class="foot"><button id="all">PARLER À TOUS</button></div>
 </div>
+
+<div id="menu" class="modal hide"><div class="sheet">
+  <label style="text-align:left;margin-top:0">Bouton PARLER</label>
+  <div class="seg"><button id="mHold" class="sel">Maintenir pour parler</button><button id="mLatch">Toucher : on / off</button></div>
+  <button class="big" id="btnPocket" style="margin-top:16px">Mode poche (écran noir)</button>
+  <p class="hint" id="diag"></p>
+  <button class="link" id="btnLeave">Quitter le tournage</button>
+  <button class="link" id="mnClose">Fermer</button>
+</div></div>
 
 <div id="invite" class="modal hide"><div class="sheet">
   <div class="shoot" id="invTitle" style="font-size:22px"></div>
@@ -228,7 +237,7 @@ async function begin(r, sh, list, created) {
   startKeepAlive();
   chans = list.map(c => ({ key: c.key, name: c.name, on: false, talk: false, members: new Map(), track: null, stream: null }));
   for (const ch of chans) makeTrack(ch);
-  buildPanel();
+  buildPanel(); probeRelay();
   $('#home').classList.add('hide'); $('#panel').classList.remove('hide');
   $('#shootName').textContent = shoot;
   history.replaceState(null, '', shareUrl());
@@ -411,24 +420,41 @@ function applyTrack(ch) { if (ch.track) ch.track.enabled = !!(ch.on && (ch.talk 
 function setTalk(ch, v) { ch.talk = v; if (v) mainCh = ch; chans.forEach(applyTrack); update(); }
 
 /* ---------- Interface ---------- */
+let relayState = '';
+async function probeRelay() {
+  try {
+    if (!ICE.some(s => [].concat(s.urls).some(u => /^turns?:/.test(u)))) { relayState = 'none'; return update(); }
+    const pc = new RTCPeerConnection({ iceServers: ICE, iceTransportPolicy: 'relay' }); let ok = false;
+    pc.onicecandidate = e => { if (e.candidate && /typ relay/.test(e.candidate.candidate)) ok = true; };
+    pc.createDataChannel('p'); await pc.setLocalDescription(await pc.createOffer());
+    for (let i = 0; i < 40 && !ok; i++) await new Promise(r => setTimeout(r, 150));
+    pc.close(); relayState = ok ? 'ok' : 'ko';
+  } catch (e) { relayState = 'ko'; }
+  update();
+}
 function buildPanel() {
   const box = $('#chans'); box.innerHTML = '';
   for (const ch of chans) {
-    const row = document.createElement('div'); row.className = 'row'; row.id = 'r-' + ch.key;
-    row.innerHTML = '<button class="ear"><span class="sw"></span><span class="tx"><b>' + esc(ch.name) + '</b><small></small></span></button><button class="ptt">PARLER</button>';
-    box.appendChild(row);
-    row.querySelector('.ear').onclick = () => { ch.on ? leaveChan(ch) : joinChan(ch); };
-    bindPtt(row.querySelector('.ptt'), () => { if (!ch.on) joinChan(ch); return ch; });
+    const d = document.createElement('div'); d.className = 'chip'; d.id = 'r-' + ch.key;
+    d.innerHTML = '<button class="cn"><b>' + esc(ch.name) + '</b><small></small></button><button class="sp" aria-label="Écouter">🔈</button>';
+    box.appendChild(d);
+    d.querySelector('.cn').onclick = () => selectChan(ch);
+    d.querySelector('.sp').onclick = () => { if (ch === mainCh) return; ch.on ? leaveChan(ch) : joinChan(ch); };
   }
+  bindPtt($('#big'), () => mainCh);
   bindPtt($('#all'), null, true);
   $('#mHold').onclick = () => setMode(true); $('#mLatch').onclick = () => setMode(false); setMode(holdMode);
+  $('#btnMenu').onclick = () => $('#menu').classList.remove('hide'); $('#mnClose').onclick = () => $('#menu').classList.add('hide');
+  $('#btnPocket').addEventListener('click', () => $('#menu').classList.add('hide'));
 }
-function setMode(h) { holdMode = h; store.set('moteur.mode', h ? 'hold' : 'latch'); $('#mHold').classList.toggle('sel', h); $('#mLatch').classList.toggle('sel', !h); }
+function selectChan(ch) { if (mainCh && mainCh !== ch) setTalk(mainCh, false); joinChan(ch); mainCh = ch; update(); }
+function setMode(h) { holdMode = h; store.set('moteur.mode', h ? 'hold' : 'latch'); $('#mHold').classList.toggle('sel', h); $('#mLatch').classList.toggle('sel', !h); update(); }
 function bindPtt(btn, getCh, isAll) {
   let down = false;
   const on = e => {
     e.preventDefault(); if (ac && ac.state === 'suspended') ac.resume();
-    const ch = isAll ? null : getCh();
+    let ch = null;
+    if (!isAll) { if (!mainCh) selectChan(chans[0]); ch = getCh(); }
     if (holdMode) { down = true; try { btn.setPointerCapture(e.pointerId); } catch (x) {} isAll ? setAll(true) : setTalk(ch, true); }
     else { isAll ? setAll(!allHeld) : setTalk(ch, !ch.talk); }
     if (navigator.vibrate) navigator.vibrate(12);
@@ -443,19 +469,23 @@ function setAll(v) { allHeld = v; chans.forEach(applyTrack); update(); }
 function update() {
   if (!chans.length) return;
   const down = !wsOk && wsDownAt && Date.now() - wsDownAt > 2500;
-  const st = $('#status');
-  st.className = down ? 'warn' : ''; st.textContent = down ? 'Reconnexion au serveur… l’audio en cours continue' : (me.name + ' · ' + (wsOk ? 'connecté' : 'connexion…'));
+  $('#dot').className = 'dot ' + (down ? 'warn' : wsOk ? 'ok' : '');
+  $('#status').textContent = down ? 'Reconnexion… l’audio en cours continue' : (me.name + (wsOk ? ' · connecté' : ' · connexion…') + (relayState === 'ok' ? ' · relais prêt' : relayState === 'ko' ? ' · relais HS' : ''));
+  $('#diag').textContent = 'Serveur : ' + (wsOk ? 'connecté' : 'hors ligne') + ' · Relais : ' + (relayState === 'ok' ? 'prêt' : relayState === 'ko' ? 'injoignable' : relayState === 'none' ? 'absent' : 'test…');
   for (const ch of chans) {
-    const row = $('#r-' + ch.key); if (!row) continue;
-    const talking = ch.on && (ch.talk || allHeld);
+    const d = $('#r-' + ch.key); if (!d) continue;
     const hearing = ch.on && [...ch.members.values()].some(m => m.speak);
-    row.className = 'row' + (ch.on ? ' on' : '') + (talking ? ' say' : '') + (hearing ? ' hear' : '');
-    const sm = row.querySelector('small');
-    if (!ch.on) sm.textContent = 'Touche pour écouter ce canal';
-    else if (!ch.members.size) sm.textContent = 'Personne d’autre pour l’instant';
-    else sm.textContent = [...ch.members.values()].map(m => (m.speak ? '🔊 ' : '') + m.name + (m.st === 'ok' ? (m.ms != null ? ' · ' + m.ms + ' ms' : '') + (m.route === 'relais' ? ' · relais' : '') : ' · connexion…')).join('   ');
-    row.querySelector('.ptt').textContent = talking ? (holdMode ? 'JE PARLE' : 'EN DIRECT') : 'PARLER';
+    d.className = 'chip' + (ch.on ? ' on' : '') + (ch === mainCh ? ' act' : '') + (hearing ? ' hear' : '');
+    const n = ch.on ? [...ch.members.values()].filter(m => m.st === 'ok').length : 0;
+    const cnt = n ? n + ' en ligne' : 'seul';
+    d.querySelector('small').textContent = ch === mainCh ? 'actif · ' + cnt : (ch.on ? 'écoute · ' + cnt : 'touche pour choisir');
+    d.querySelector('.sp').textContent = ch.on ? '🔊' : '🔈';
   }
+  const a = mainCh, talkingA = !!(a && (a.talk || allHeld));
+  $('#big').className = talkingA ? 'say' : '';
+  $('#bigT').textContent = talkingA ? (holdMode ? 'JE PARLE' : 'EN DIRECT') : 'PARLER';
+  $('#bigS').textContent = allHeld ? 'à tous les canaux' : (a ? a.name : 'choisis un canal');
+  $('#who').innerHTML = a ? (a.members.size ? [...a.members.values()].map(m => '<span class="' + (m.speak ? 'sp' : '') + '">' + (m.speak ? '🔊 ' : '') + esc(m.name) + (m.st === 'ok' ? (m.ms != null ? ' · ' + m.ms + ' ms' : '') + (m.route ? ' · ' + m.route : '') : ' · connexion…') + '</span>').join('  ·  ') : 'Personne d’autre sur ce canal pour l’instant') : '';
   $('#all').className = allHeld ? 'say' : ''; $('#all').textContent = allHeld ? 'JE PARLE À TOUS' : 'PARLER À TOUS';
   if (pocketOn) { $('#pocket').classList.toggle('say', !!(mainCh && mainCh.talk)); $('#pocketT').textContent = mainCh ? (mainCh.talk ? 'Je parle · ' + mainCh.name : 'Touche pour parler · ' + mainCh.name) : 'Aucun canal'; }
 }
