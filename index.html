@@ -91,6 +91,7 @@
 #big{width:min(56vw,24dvh)}
 #chans{max-height:30%}
 #open{margin:0;padding:6px 14px;font-size:14px}
+#menu .seg,#menu label:first-child{display:none}
 </style>
 </head>
 <body>
@@ -193,7 +194,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 let me = { id: '', name: '' };
 let room = '', shoot = '', chans = [], mic = null, wsOk = false, ws = null, wsDownAt = 0;
 let openMic = store.get('moteur.open') === '1';
-let holdMode = store.get('moteur.mode') !== 'latch';
+let holdMode = true; /* push-to-talk par défaut ; le micro ouvert passe par l'interrupteur */
 let mainCh = null, allHeld = false, pocketOn = false, ac = null;
 
 /* ---------- Accueil ---------- */
@@ -507,7 +508,7 @@ function setMode(h) { holdMode = h; store.set('moteur.mode', h ? 'hold' : 'latch
 function bindPtt(btn, getCh, isAll) {
   let down = false;
   const on = e => {
-    e.preventDefault(); if (ac && ac.state === 'suspended') ac.resume();
+    e.preventDefault(); if (openMic && !isAll) return; if (ac && ac.state === 'suspended') ac.resume();
     let ch = null;
     if (!isAll) { if (!mainCh) selectChan(chans[0]); ch = getCh(); }
     if (holdMode) { down = true; try { btn.setPointerCapture(e.pointerId); } catch (x) {} isAll ? setAll(true) : setTalk(ch, true); }
