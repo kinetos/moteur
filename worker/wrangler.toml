@@ -2,6 +2,10 @@ name = "moteur-signal"
 main = "worker.js"
 compatibility_date = "2024-11-01"
 workers_dev = true
+keep_vars = true
+
+[vars]
+RELAY_URLS = "turn:free.expressturn.com:3478?transport=udp,turn:free.expressturn.com:3478?transport=tcp"
 
 [[durable_objects.bindings]]
 name = "ROOM"
