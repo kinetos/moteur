@@ -1,6 +1,6 @@
 {
-  "name": "WaySync · intercom de tournage",
-  "short_name": "WaySync",
+  "name": "WayLink · intercom de tournage",
+  "short_name": "WayLink",
   "description": "Intercom de tournage sur smartphone",
   "start_url": "./",
   "scope": "./",
