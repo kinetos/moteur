@@ -81,6 +81,10 @@
   #pocket { position:fixed; inset:0; background:#000; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#444; user-select:none; -webkit-user-select:none; touch-action:none; }
   #pocket .p-t { font-size:22px; font-weight:800; color:#222; } #pocket.say .p-t { color:var(--acc); }
   #pocket .p-x { position:absolute; top:calc(14px + env(safe-area-inset-top)); right:14px; font-size:12px; color:#333; padding:16px; border:1px solid #1d1d1d; border-radius:12px; }
+#open{display:flex;align-items:center;gap:12px;margin:14px auto 0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:999px;color:var(--txt);font:inherit;font-weight:600;font-size:15px}
+#open i{width:44px;height:26px;border-radius:13px;background:#3a3f48;position:relative;transition:.2s;flex:none}
+#open i:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+#open.on{border-color:var(--acc)}#open.on i{background:var(--acc)}#open.on i:after{left:21px}
 </style>
 </head>
 <body>
@@ -129,6 +133,7 @@
   <div id="chans"></div>
   <div class="stage">
     <button id="big"><span id="bigT">PARLER</span><small id="bigS"></small></button>
+    <button id="open" role="switch" aria-checked="false"><i></i><span>Micro ouvert · mains libres</span></button>
     <div class="vuw"><small>Tu entends</small><div class="vu" id="vuIn"><i></i></div><small>Ton micro</small><div class="vu" id="vuMic"><i></i></div></div>
     <div id="who"></div>
   </div>
@@ -181,6 +186,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 let me = { id: '', name: '' };
 let room = '', shoot = '', chans = [], mic = null, wsOk = false, ws = null, wsDownAt = 0;
+let openMic = store.get('moteur.open') === '1';
 let holdMode = store.get('moteur.mode') !== 'latch';
 let mainCh = null, allHeld = false, pocketOn = false, ac = null;
 
@@ -456,7 +462,7 @@ function leaveChan(ch) {
   for (const m of ch.members.values()) closePC(m); ch.members.clear();
   if (mainCh === ch) mainCh = chans.find(c => c.on) || null; update();
 }
-function applyTrack(ch) { if (ch.track) ch.track.enabled = !!(ch.on && (ch.talk || allHeld)); }
+function applyTrack(ch) { if (ch.track) ch.track.enabled = !!(ch.on && (ch.talk || allHeld || (openMic && ch === mainCh))); }
 function setTalk(ch, v) { ch.talk = v; if (v) mainCh = ch; chans.forEach(applyTrack); update(); }
 
 /* ---------- Interface ---------- */
@@ -485,11 +491,12 @@ function buildPanel() {
   }
   bindPtt($('#big'), () => mainCh);
   bindPtt($('#all'), null, true);
-  $('#mHold').onclick = () => setMode(true); $('#mLatch').onclick = () => setMode(false); setMode(holdMode);
+  $('#mHold').onclick = () => setMode(true); $('#mLatch').onclick = () => setMode(false); setMode(holdMode); $('#open').onclick = () => setOpen(!openMic); setOpen(openMic);
   $('#btnMenu').onclick = () => $('#menu').classList.remove('hide'); $('#mnClose').onclick = () => $('#menu').classList.add('hide');
   $('#btnPocket').addEventListener('click', () => $('#menu').classList.add('hide'));
 }
 function selectChan(ch) { if (mainCh && mainCh !== ch) setTalk(mainCh, false); joinChan(ch); mainCh = ch; update(); }
+function setOpen(v) { openMic = v; store.set('moteur.open', v ? '1' : '0'); const b = $('#open'); b.classList.toggle('on', v); b.setAttribute('aria-checked', v ? 'true' : 'false'); update(); }
 function setMode(h) { holdMode = h; store.set('moteur.mode', h ? 'hold' : 'latch'); $('#mHold').classList.toggle('sel', h); $('#mLatch').classList.toggle('sel', !h); update(); }
 function bindPtt(btn, getCh, isAll) {
   let down = false;
@@ -523,9 +530,10 @@ function update() {
     d.querySelector('small').textContent = ch === mainCh ? 'actif · ' + cnt : (ch.on ? 'écoute · ' + cnt : 'touche pour choisir');
     d.querySelector('.sp').textContent = ch.on ? '🔊' : '🔈';
   }
-  const a = mainCh, talkingA = !!(a && (a.talk || allHeld));
+  chans.forEach(applyTrack);
+  const a = mainCh, talkingA = !!(a && (a.talk || allHeld || openMic));
   $('#big').className = talkingA ? 'say' : '';
-  $('#bigT').textContent = talkingA ? (holdMode ? 'JE PARLE' : 'EN DIRECT') : 'PARLER';
+  $('#bigT').textContent = talkingA ? (openMic ? 'MICRO OUVERT' : holdMode ? 'JE PARLE' : 'EN DIRECT') : 'PARLER';
   $('#bigS').textContent = allHeld ? 'à tous les canaux' : (a ? a.name : 'choisis un canal');
   $('#who').innerHTML = a ? (a.members.size ? [...a.members.values()].map(m => '<span class="' + (m.speak ? 'sp' : '') + '">' + (m.speak ? '🔊 ' : '') + esc(m.name) + (m.st === 'ok' ? (m.ms != null ? ' · ' + m.ms + ' ms' : '') + (m.route ? ' · ' + m.route : '') : ' · connexion…') + '</span>').join('  ·  ') : 'Personne d’autre sur ce canal pour l’instant') : '';
   $('#all').className = allHeld ? 'say' : ''; $('#all').textContent = allHeld ? 'JE PARLE À TOUS' : 'PARLER À TOUS';
